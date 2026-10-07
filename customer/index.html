@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EATZY — Customer</title><link rel="shortcut icon" href="../eatzy.png">
+<style>
+:root{--brand:#fc8019;--ink:#1f1f1f;--muted:#737373;--bg:#f7f7f7;--line:#ececec;--ok:#10b981;--danger:#dc2626}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--ink)}
+button,input{font:inherit}.hidden{display:none!important}.wrap{max-width:1280px;margin:auto;padding:14px}
+header{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid var(--line);padding:10px 14px;display:flex;gap:12px;align-items:center}
+.logo{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,var(--brand),#ffab59);display:grid;place-items:center;color:#fff;font-weight:900}.brand{font-weight:900;color:var(--brand);font-size:19px}.subtitle{font-size:11px;color:var(--muted)}
+.search{flex:1;display:flex;border:1px solid var(--line);border-radius:12px;background:#fafafa;padding:8px 10px}.search input{border:0;outline:0;background:transparent;width:100%}.actions{display:flex;gap:8px}.btn{border:0;border-radius:10px;padding:10px 12px;font-weight:800;cursor:pointer}.primary{background:var(--brand);color:#fff}.light{background:#fff;border:1px solid var(--line)}
+.grid-layout{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:16px}.panel{background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 8px 30px rgba(0,0,0,.04)}
+.menu-head{padding:16px 16px 8px}.category-tabs{display:flex;gap:8px;overflow:auto;padding:8px 0 2px}.tab{white-space:nowrap;padding:8px 12px;border:1px solid var(--line);border-radius:999px;background:#fff;cursor:pointer;font-weight:800}.tab.active{color:var(--brand);border-color:#ffd1ae;background:#fff5ee}
+.menu-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;padding:14px}.card{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff;display:flex;flex-direction:column}.card img{width:100%;height:140px;object-fit:cover;background:#f1f1f1}.body{padding:12px;display:flex;flex-direction:column;gap:7px;flex:1}.name{font-weight:900}.meta{font-size:12px;color:var(--muted)}.price{font-weight:900;color:var(--brand)}.row{display:flex;align-items:center;gap:8px}.spacer{margin-left:auto}.small{padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:#fff;cursor:pointer;font-weight:800}
+.cart{position:sticky;top:80px;padding:14px}.cart-items{display:grid;gap:8px;max-height:46vh;overflow:auto}.cart-item{border:1px solid var(--line);border-radius:12px;padding:9px;display:flex;gap:9px;align-items:center}.qty{display:flex;align-items:center;gap:6px}.summary{border-top:1px dashed var(--line);margin-top:12px;padding-top:12px;display:grid;gap:7px}.sum-row{display:flex;justify-content:space-between}.total{font-size:18px;font-weight:900}.empty{padding:24px;text-align:center;color:var(--muted)}
+.login{min-height:100vh;display:grid;place-items:center;padding:18px}.login-card{width:min(430px,100%);background:#fff;border:1px solid var(--line);border-radius:22px;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.08)}.login-card h1{margin:8px 0}.login-card p{color:var(--muted);line-height:1.5}.field{display:grid;gap:7px;margin-top:12px}.field label{font-size:13px;font-weight:800}.field input{padding:13px;border:1px solid var(--line);border-radius:11px;outline:0}.notice{margin-top:12px;padding:10px 12px;border-radius:10px;background:#fff4ea;font-size:13px;color:#9a4b08}.error{background:#fff0f0;color:#a01919}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:14px;z-index:100}.modal.open{display:flex}.sheet{width:min(760px,100%);max-height:92vh;overflow:auto;background:#fff;border-radius:18px;padding:16px}.order-card{border:1px solid var(--line);border-radius:14px;padding:12px;margin-top:10px}.status-line{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:12px}.step{height:8px;border-radius:999px;background:#e8e8e8}.step.done{background:var(--ok)}.step.current{background:var(--brand)}.otp{margin-top:10px;padding:12px;border-radius:12px;background:#fff6ef;border:1px dashed #ffc08f}.otp strong{display:block;font-size:26px;letter-spacing:5px;color:var(--brand)}
+@media(max-width:900px){.grid-layout{grid-template-columns:1fr}.cart{position:static}.cart-items{max-height:none}}@media(max-width:640px){header{flex-wrap:wrap}.search{order:3;flex-basis:100%}.actions button{display:none}.grid-layout{gap:10px}.menu-head{padding:12px}.menu-grid{grid-template-columns:repeat(2,minmax(0,1fr));padding:10px;gap:9px}.card img{height:115px}.body{padding:9px}.card .name{font-size:14px}.subtitle{display:none}.cart{padding:11px}.status-line{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head><body>
+<div id="loginView" class="login">
+  <section class="login-card">
+    <div class="logo">E</div><div class="brand">EATZY</div>
+    <h1>Order without the queue.</h1><p>Sign in with your mobile number using Supabase Phone OTP.</p>
+    <div class="field"><label>Mobile number</label><input id="phone" inputmode="numeric" maxlength="10" placeholder="10-digit mobile number"></div>
+    <button class="btn primary" style="width:100%;margin-top:14px" id="sendOtp">Send OTP</button>
+    <div id="otpBlock" class="hidden">
+      <div class="field"><label>OTP</label><input id="otp" inputmode="numeric" maxlength="6" placeholder="6-digit code"></div>
+      <button class="btn primary" style="width:100%;margin-top:12px" id="verifyOtp">Verify & Continue</button>
+    </div>
+    <div id="notice" class="notice hidden"></div>
+    <p style="font-size:12px;margin-top:16px">Hosted Supabase requires an SMS/WhatsApp provider for real phone OTP delivery. No fake authenticated session is created here.</p>
+  </section>
+</div>
+
+<div id="appView" class="hidden">
+<header><div class="logo">E</div><div><div class="brand">EATZY</div><div class="subtitle" id="stallName"></div></div><div class="search"><input id="search" placeholder="Search dishes..."></div><div class="actions"><button class="btn light" id="ordersBtn">Track Order</button><button class="btn light" id="logout">Logout</button></div></header>
+<main class="wrap grid-layout">
+<section class="panel"><div class="menu-head"><div style="font-size:20px;font-weight:900">Popular near you</div><div style="color:var(--muted);font-size:13px;margin-top:4px">Choose your items and skip the queue.</div><div id="cats" class="category-tabs"></div></div><div id="menu" class="menu-grid"></div></section>
+<aside class="panel cart"><div class="row"><h3 style="margin:0">Your Cart</h3><span id="cartCount" style="margin-left:auto;color:var(--muted);font-size:13px">0 items</span></div><div id="cart" class="cart-items"></div><div class="summary"><div class="sum-row"><span>Subtotal</span><span id="subtotal">₹0</span></div><div class="sum-row total"><span>Total</span><span id="total">₹0</span></div><button class="btn primary" id="checkout">Place Order</button></div></aside>
+</main></div>
+
+<div id="ordersModal" class="modal"><div class="sheet"><div class="row"><div><h2 style="margin:0">My Orders</h2><div style="color:var(--muted);font-size:13px">Token, items, status and pickup OTP</div></div><button class="small" id="closeOrders">Close</button></div><div id="ordersList"></div></div></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="../supabase-config.js"></script>
+<script>
+const sb = supabase.createClient(window.EATZY_SUPABASE_URL,window.EATZY_SUPABASE_ANON_KEY);
+const $ = id=>document.getElementById(id); const money=n=>'₹'+Number(n).toFixed(0);
+let stall=null, menu=[], cart=new Map(), category='All', search='', orderChannel=null, menuChannel=null;
+function notice(msg,error=false){$('notice').textContent=msg;$('notice').classList.remove('hidden');$('notice').classList.toggle('error',error)}
+function phoneNorm(v){const d=String(v||'').replace(/\D/g,'');return d.length===10?'+91'+d:''}
+function cats(){const values=['All',...new Set(menu.map(x=>x.category))];$('cats').innerHTML=values.map(c=>`<button class="tab ${c===category?'active':''}" data-cat="${encodeURIComponent(c)}">${c}</button>`).join('');$('cats').querySelectorAll('[data-cat]').forEach(b=>b.onclick=()=>{category=decodeURIComponent(b.dataset.cat);cats();renderMenu()})}
+function filtered(){return menu.filter(x=>x.is_available && (category==='All'||x.category===category) && (!search||x.name.toLowerCase().includes(search)||x.category.toLowerCase().includes(search)||x.tags_text.toLowerCase().includes(search)))}
+function renderMenu(){const data=filtered();$('menu').innerHTML=data.length?data.map(x=>`<article class="card"><img src="${x.image_url||'../eatzy.png'}" alt="${x.name}"><div class="body"><div class="name">${esc(x.name)}</div><div class="meta">${esc(x.category)}${x.tags_text?' • '+esc(x.tags_text):''}</div><div class="row"><div class="price">${money(x.price)}</div><div class="spacer"></div><button class="small" onclick="add('${x.id}')">Add</button></div></div></article>`).join(''):'<div class="empty">No available items match your search.</div>'}
+function renderCart(){let total=0,count=0;const rows=[];for(const [id,qty] of cart){const x=menu.find(m=>m.id===id);if(!x)continue;total+=Number(x.price)*qty;count+=qty;rows.push(`<div class="cart-item"><div style="flex:1"><strong>${esc(x.name)}</strong><div style="color:var(--muted);font-size:12px">${money(x.price)} each</div></div><div class="qty"><button class="small" onclick="changeQty('${id}',-1)">−</button><strong>${qty}</strong><button class="small" onclick="changeQty('${id}',1)">+</button></div></div>`)}$('cart').innerHTML=rows.join('')||'<div class="empty">Your cart is empty.</div>';$('cartCount').textContent=`${count} item${count===1?'':'s'}`;$('subtotal').textContent=money(total);$('total').textContent=money(total);$('checkout').disabled=!count}
+function add(id){const x=menu.find(m=>m.id===id);if(!x||!x.is_available)return;const next=(cart.get(id)||0)+1;if(next>x.stock)return alert(`Only ${x.stock} available.`);cart.set(id,next);renderCart()}
+function changeQty(id,delta){const next=(cart.get(id)||0)+delta;if(next<=0)cart.delete(id);else cart.set(id,next);renderCart()}
+function esc(s){return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+async function loadStall(){const {data,error}=await sb.from('stalls').select('id,name,slug').eq('slug',window.EATZY_DEFAULT_STALL_SLUG).maybeSingle();if(error)throw error;if(!data)throw new Error('Stall not found. Run STAGE7_SCHEMA.sql first.');stall=data;$('stallName').textContent=stall.name}
+async function loadMenu(){const {data,error}=await sb.from('menu_items').select('id,name,category,price,image_url,is_available,stock,tags_text,is_veg').eq('stall_id',stall.id).order('category').order('name');if(error)throw error;menu=data||[];cats();renderMenu();renderCart()}
+async function loadOrders(){
+  const user=(await sb.auth.getUser()).data.user;
+  const {data,error}=await sb.from('orders').select('id,token_number,status,total_amount,created_at,order_items(id,item_name,quantity,unit_price)').eq('customer_id',user.id).order('created_at',{ascending:false});
+  if(error)throw error;
+
+  const orders=data||[];
+  const readyIds=orders.filter(o=>o.status==='Ready for Pickup').map(o=>o.id);
+  let secretMap=new Map();
+  if(readyIds.length){
+    const {data:secrets,error:secretError}=await sb.from('order_pickup_secrets').select('order_id,pickup_otp').in('order_id',readyIds);
+    if(secretError)console.warn('Pickup OTP could not be loaded:',secretError.message);
+    (secrets||[]).forEach(s=>secretMap.set(s.order_id,s.pickup_otp));
+  }
+  renderOrders(orders,secretMap);
+}
+function renderOrders(data,secretMap=new Map()){
+  $('ordersList').innerHTML=data.length?data.map(o=>{
+    const idx=['Order Received','Preparing','Ready for Pickup','Completed'].indexOf(o.status);
+    const items=(o.order_items||[]).map(i=>`${esc(i.item_name)} × ${i.quantity}`).join(' • ');
+    const otp=secretMap.get(o.id);
+    const otpBlock=o.status==='Ready for Pickup'&&otp?`<div class="otp"><div style="font-size:12px;color:var(--muted)">Pickup OTP</div><strong>${esc(otp)}</strong><div style="font-size:12px;color:var(--muted)">Show this to the vendor when collecting your order.</div></div>`:'';
+    return `<div class="order-card"><div class="row"><strong style="font-size:20px;color:var(--brand)">Token ${esc(o.token_number)}</strong><span class="spacer"></span><span>${esc(o.status)}</span></div><div style="font-size:13px;color:var(--muted);margin-top:8px">${items}</div><div class="row" style="margin-top:8px"><strong>${money(o.total_amount)}</strong><span class="spacer"></span><span>${new Date(o.created_at).toLocaleString()}</span></div><div class="status-line">${[0,1,2,3].map(i=>`<div class="step ${i<idx?'done':''} ${i===idx?'current':''}"></div>`).join('')}</div>${otpBlock}</div>`
+  }).join(''):'<div class="empty">No orders yet.</div>'
+}
+function subscribeCustomer(){if(orderChannel)sb.removeChannel(orderChannel);orderChannel=sb.channel('customer-orders').on('postgres_changes',{event:'*',schema:'public',table:'orders',filter:`customer_id=eq.${sb.auth.getUser?'' : ''}`},()=>loadOrders()).subscribe();}
+async function checkout(){if(!cart.size)return;const items=[...cart.entries()].map(([menu_item_id,quantity])=>({menu_item_id,quantity}));const {data,error}=await sb.rpc('place_order',{p_stall_id:stall.id,p_items:items});if(error){alert(error.message);return}cart.clear();renderCart();alert(`Order placed!\nToken: ${data[0].token_number}\n\nYour pickup OTP will appear in Track Order after the vendor marks the order Ready for Pickup.`);$('ordersModal').classList.add('open');await loadOrders()}
+async function startApp(){await loadStall();await loadMenu();$('loginView').classList.add('hidden');$('appView').classList.remove('hidden');await loadOrders();const {data:{user}}=await sb.auth.getUser();if(orderChannel)sb.removeChannel(orderChannel);orderChannel=sb.channel('customer-orders-'+Date.now()).on('postgres_changes',{event:'*',schema:'public',table:'orders',filter:`customer_id=eq.${user.id}`},()=>loadOrders()).subscribe()}
+async function authCheck(){const {data:{session}}=await sb.auth.getSession();if(session){try{await startApp()}catch(e){notice(e.message,true)}}else{$('loginView').classList.remove('hidden');$('appView').classList.add('hidden')}}
+$('sendOtp').onclick=async()=>{const phone=phoneNorm($('phone').value);if(!phone)return notice('Enter a valid 10-digit Indian mobile number.',true);const {error}=await sb.auth.signInWithOtp({phone});if(error)return notice(error.message,true);$('otpBlock').classList.remove('hidden');notice('OTP sent. Enter the code from SMS/WhatsApp.')}
+$('verifyOtp').onclick=async()=>{const phone=phoneNorm($('phone').value),token=$('otp').value.trim();const {error}=await sb.auth.verifyOtp({phone,token,type:'sms'});if(error)return notice(error.message,true);await authCheck()}
+$('logout').onclick=async()=>{await sb.auth.signOut();if(orderChannel)sb.removeChannel(orderChannel);location.reload()};$('ordersBtn').onclick=async()=>{$('ordersModal').classList.add('open');await loadOrders()};$('closeOrders').onclick=()=>$('ordersModal').classList.remove('open');$('checkout').onclick=checkout;$('search').oninput=e=>{search=e.target.value.trim().toLowerCase();renderMenu()};
+authCheck();window.add=add;window.changeQty=changeQty;
+</script></body></html>

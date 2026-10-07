@@ -1,0 +1,20 @@
+{
+  "name": "EATZY",
+  "short_name": "EATZY",
+  "start_url": "/customer/",
+  "display": "standalone",
+  "theme_color": "#fc8019",
+  "background_color": "#ffffff",
+  "icons": [
+    {
+      "src": "/eatzy.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/eatzy.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

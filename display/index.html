@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#111">
+<title>EATZY — Owner Display</title>
+<style>
+:root{--brand:#fc8019;--bg:#101010;--card:#1a1a1a;--ink:#fff;--muted:#a3a3a3;--ready:#10b981;--danger:#ef4444}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;min-height:100vh}
+button,input{font:inherit}
+.hidden{display:none!important}
+header{display:flex;align-items:center;gap:12px;padding:15px 20px;background:#0b0b0b;border-bottom:1px solid #242424}
+.logo{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,var(--brand),#ffab59);display:grid;place-items:center;font-weight:900}
+.title{font-size:22px;font-weight:900}.sub{color:var(--muted);font-size:12px}.spacer{margin-left:auto}
+.btn{border:1px solid #333;background:#171717;color:#fff;border-radius:9px;padding:9px 11px;font-weight:800;cursor:pointer}.btn.primary{background:var(--brand);border-color:var(--brand)}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.login{min-height:100vh;display:grid;place-items:center;padding:20px}
+.login-card{width:min(430px,100%);background:#171717;border:1px solid #2a2a2a;border-radius:22px;padding:24px;box-shadow:0 20px 70px rgba(0,0,0,.35)}
+.login-brand{font-size:28px;font-weight:950;color:var(--brand)}
+.field{display:grid;gap:7px;margin-top:14px}.field label{font-size:13px;font-weight:800}.field input{width:100%;padding:12px 13px;border:1px solid #333;border-radius:11px;background:#101010;color:#fff;outline:none}.field input:focus{border-color:#ff9f55}
+.notice{margin-top:12px;padding:10px 12px;border-radius:10px;background:#291d14;color:#ffd8bd;font-size:13px}.notice.error{background:#2a1717;color:#ffc7c7}
+.login-actions{display:flex;gap:8px;margin-top:14px}.login-actions .btn{flex:1}
+.wrap{padding:20px;max-width:1400px;margin:auto}.board{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.col{background:var(--card);border:1px solid #292929;border-radius:18px;padding:18px;min-height:70vh}.col h2{margin:0;font-size:22px}.subhead{color:var(--muted);font-size:12px;margin-top:4px}
+.tokens{display:flex;flex-wrap:wrap;gap:16px;margin-top:18px}.token{width:150px;height:120px;background:#111;border:1px solid #2d2d2d;border-radius:16px;display:grid;place-items:center;font-size:42px;font-weight:1000;letter-spacing:1px}.ready .token{border-color:#155e48;box-shadow:0 0 0 1px rgba(16,185,129,.18)}
+.empty{color:#666;padding:30px 5px;text-align:center;font-size:18px}
+@media(max-width:760px){.board{grid-template-columns:1fr}.col{min-height:auto}.token{width:122px;height:100px;font-size:34px}}
+</style>
+</head>
+<body>
+<div id="login" class="login">
+  <section class="login-card">
+    <div class="logo">E</div>
+    <div class="login-brand" style="margin-top:10px">EATZY Display</div>
+    <p style="color:var(--muted);line-height:1.5;margin-bottom:0">Sign in with the same owner account used for the EATZY owner portal. This display will automatically load that owner's stall.</p>
+    <div class="field"><label for="email">Owner email</label><input id="email" type="email" autocomplete="username" placeholder="owner@example.com"></div>
+    <div class="field"><label for="password">Password</label><input id="password" type="password" autocomplete="current-password" placeholder="••••••••"></div>
+    <div class="login-actions"><button class="btn primary" id="loginBtn">Enter Display</button></div>
+    <div id="loginNotice" class="notice hidden"></div>
+  </section>
+</div>
+
+<div id="app" class="hidden">
+  <header>
+    <div class="logo">E</div>
+    <div><div class="title">EATZY</div><div id="stall" class="sub">Owner Display</div></div>
+    <div class="spacer"></div>
+    <button class="btn" id="full">Fullscreen</button>
+    <button class="btn" id="logout">Logout</button>
+  </header>
+  <main class="wrap">
+    <div class="board">
+      <section class="col">
+        <h2>Preparing</h2>
+        <div class="subhead">Orders currently being prepared</div>
+        <div id="preparing" class="tokens"></div>
+      </section>
+      <section class="col ready">
+        <h2>Ready for Pickup</h2>
+        <div class="subhead">Please collect when your token appears here</div>
+        <div id="ready" class="tokens"></div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../supabase-config.js"></script>
+<script>
+const sb=supabase.createClient(window.EATZY_SUPABASE_URL,window.EATZY_SUPABASE_ANON_KEY);
+const $=id=>document.getElementById(id);
+let stall=null,channel=null;
+
+function esc(s){return String(s??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\\':'&#92;','"':'&quot;'}[c]));}
+function showNotice(message,isError=false){$('loginNotice').textContent=message;$('loginNotice').classList.remove('hidden');$('loginNotice').classList.toggle('error',isError)}
+
+async function getOwnerContext(){
+  const {data:{user},error:userError}=await sb.auth.getUser();
+  if(userError) throw userError;
+  if(!user) return null;
+  const {data:profile,error:profileError}=await sb.from('profiles').select('id,role,name').eq('id',user.id).single();
+  if(profileError) throw profileError;
+  if(profile.role!=='vendor'&&profile.role!=='admin') throw new Error('This account is not assigned as a vendor/owner.');
+  const {data:stallData,error:stallError}=await sb.from('stalls').select('id,name,slug,is_active').eq('owner_id',user.id).maybeSingle();
+  if(stallError) throw stallError;
+  if(!stallData) throw new Error('No stall is assigned to this owner yet. Run the owner setup SQL.');
+  if(!stallData.is_active) throw new Error('This stall is currently inactive.');
+  return {user,profile,stall:stallData};
+}
+
+async function loadQueue(){
+  if(!stall) return;
+  const {data,error}=await sb.rpc('get_display_queue',{p_stall_id:stall.id});
+  if(error) throw error;
+  const rows=data||[];
+  const prep=rows.filter(x=>x.status==='Preparing').sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
+  const ready=rows.filter(x=>x.status==='Ready for Pickup').sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
+  $('preparing').innerHTML=prep.length?prep.map(x=>`<div class="token">${esc(x.token_number)}</div>`).join(''):'<div class="empty">No orders</div>';
+  $('ready').innerHTML=ready.length?ready.map(x=>`<div class="token">${esc(x.token_number)}</div>`).join(''):'<div class="empty">No orders</div>';
+}
+
+function subscribe(){
+  if(channel) sb.removeChannel(channel);
+  channel=sb.channel('display-live-'+stall.id)
+    .on('postgres_changes',{event:'*',schema:'public',table:'display_queue',filter:`stall_id=eq.${stall.id}`},()=>loadQueue().catch(console.error))
+    .subscribe();
+}
+
+async function enterDisplay(){
+  const {data,error}=await sb.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});
+  if(error) return showNotice(error.message,true);
+  try{
+    const ctx=await getOwnerContext();
+    stall=ctx.stall;
+    $('login').classList.add('hidden');
+    $('app').classList.remove('hidden');
+    $('stall').textContent=stall.name+' • Owner Display';
+    await loadQueue();
+    subscribe();
+  }catch(e){
+    await sb.auth.signOut();
+    showNotice(e.message||'Display setup incomplete.',true);
+  }
+}
+
+$('loginBtn').onclick=enterDisplay;
+$('password').addEventListener('keydown',e=>{if(e.key==='Enter')enterDisplay()});
+$('logout').onclick=async()=>{if(channel)await sb.removeChannel(channel);await sb.auth.signOut();location.reload()};
+$('full').onclick=()=>document.documentElement.requestFullscreen?.();
+
+(async()=>{
+  const {data:{session}}=await sb.auth.getSession();
+  if(!session) return;
+  try{
+    const ctx=await getOwnerContext();
+    stall=ctx.stall;
+    $('login').classList.add('hidden');
+    $('app').classList.remove('hidden');
+    $('stall').textContent=stall.name+' • Owner Display';
+    await loadQueue();
+    subscribe();
+  }catch(e){
+    await sb.auth.signOut();
+    showNotice(e.message||'Display setup incomplete.',true);
+  }
+})();
+</script>
+</body>
+</html>
